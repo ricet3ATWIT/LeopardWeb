@@ -5,6 +5,8 @@ class User:
         self.first = first
         self.last = last
         self.ID = ID
+    def __del__(self):
+        pass
     def getFirst(self):
         return self.first
     def getLast(self):
@@ -21,7 +23,10 @@ class User:
         print("First: ", self.first)
         print("Last: ", self.last)
         print("ID: ", self.ID)
-    # login/logout, search, search(parameters)
+    # login (I made it global), logout, search, search(parameters)
+    def logout(self):
+        database.commit()
+        del(self)
 
 class Student(User):
     def testS(self):
@@ -41,7 +46,7 @@ class Admin(User):
     def createCourse(cursor):
         """Allows admins to add a course to the 'course' table. Created by Tom."""
         while(1):
-            if input("Add courses. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : break
+            if input("Add courses. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
             crn = input('CRN: ')
             title = input("Course title: ")
             dept = input("Department (four letter abbr.): ")
@@ -58,8 +63,8 @@ class Admin(User):
     def removeCourse(cursor):
         """Allows admins to remove a course from the 'course' table. Created by Tom."""
         while(1):
-            crn = input("Input the CRN of the course to delete (or type 'exit' to go back): ")
-            if crn == 'exit' : return
+            if input("Remove courses. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
+            crn = input("Input the CRN of the course to delete: ")
             try:
                 cursor.execute("""SELECT * FROM course WHERE crn = '%s';""" %crn)
                 print("Course selected: %s" %cursor.fetchall())
@@ -138,7 +143,7 @@ def login(cursor):
     return user
 
 def searchAll(cursor):
-    """Prints all courses. Created by Tom."""
+    """Prints all courses. Created by Tom. NOTE: this function should be included in the "search by parameters" function by leaving all parameters blank."""
     cursor.execute("SELECT * FROM courses;")
     print(cursor.fetchall())     
             
@@ -151,13 +156,89 @@ database = sqlite3.connect("src/assignment5.db")
 # cursor objects are used to traverse, search, grab, etc. information from the database, similar to indices or pointers  
 cursor = database.cursor() 
 
-login(cursor)
+user = login(cursor)
+if type(user).__name__ == 'Admin':
+    while(1):
+        choice = input("""ADMIN MENU:
+        (1) Search courses
+        (2) Search courses (with parameters)
+        (3) Add courses to system
+        (4) Remove courses from system
+        (5) Add user to system
+        (6) Remove user from system
+        (7) Link user to course
+        (8) Remove links
+        (9) Log out\n""")
+        selection = int(choice)
+        match selection:
+            case 1:
+                searchAll(cursor)
+            case 2:
+                searchParam(cursor) #TODO
+            case 3:
+                user.createCourse(cursor)
+            case 4:
+                user.removeCourse(cursor)
+            case 5:
+                user.addUser(cursor) #TODO
+            case 6:
+                user.removeUser(cursor) #TODO
+            case 7:
+                user.linkUser(cursor) #TODO
+            case 8:
+                user.removeLink(cursor) #TODO
+            case 9:
+                user.logout(cursor) #TODO
+            case default:
+                print("Not a valid selection. Use characters '1', '2', etc.")
+elif type(user).__name__ == 'Instructor':
+    while(1):
+        choice = input("""INSTRUCTOR MENU:
+        (1) Search courses
+        (2) Search courses (with parameters)
+        (3) Print teaching schedule
+        (4) Search other teaching schedules 
+        (5) Log out\n""") # Do we need #4? I feel like we should do that one last.
+        selection = int(choice)
+        match selection:
+            case 1:
+                searchAll(cursor)
+            case 2:
+                searchParam(cursor) #TODO
+            case 3:
+                user.printSchedule(cursor) #TODO
+            case 4:
+                pass #TODO
+            case 5:
+                user.logout(cursor) #TODO
+            case default:
+                print("Not a valid selection. Use characters '1', '2', etc.")
+else:
+    while(1):
+        choice = input("""STUDENT MENU:
+        (1) Search courses
+        (2) Search courses (with parameters)
+        (3) Add courses
+        (4) Drop courses
+        (5) Print schedule
+        (6) Log out\n""")
+        selection = int(choice)
+        match selection:
+            case 1:
+                searchAll(cursor)
+            case 2:
+                searchParam(cursor) #TODO
+            case 3:
+                user.addCourse(cursor) #TODO
+            case 4:
+                user.dropCourse(cursor) #TODO
+            case 5:
+                user.printSchedule(cursor) #TODO
+            case 6:
+                user.logout(cursor) #TODO
+            case default:
+                print("Not a valid selection. Use characters '1', '2', etc.")
 
-
-# To save the changes in the files. Never skip this.  
-# If we skip this, nothing will be saved in the database. 
-database.commit() 
-  
 # close the connection 
 database.close()
 
@@ -185,43 +266,7 @@ def potInt(cursor):
     print("Only those that can teach %s classes:" %dept)
     cursor.execute("""SELECT ID, SURNAME FROM INSTRUCTOR WHERE INSTRUCTOR.DEPT = '%s';""" % (dept))
     query_result = cursor.fetchall()
-    if query_result == []:
+    if query_result == None:
         print("No instructors available.")
     for i in query_result:
 	    print(i)
-
-#while(1):
-#    choice = input("""MENU:
-#    (1) Search database
-#    (2) Print entire database
-#    (3) Create (course) table
-#    (4) Insert (student) tuples
-#    (5) Update (admin) tuples
-#    (6) Remove tuples
-#    (7) Insert (course) tuples
-#    (8) Potential Intructor Query
-#    (9) Exit the program\n""")
-#    selection = int(choice)
-#    match selection:
-#        case 1:
-#            searchDB(cursor)
-#        case 2:
-#            printDB(cursor)
-#        case 3:
-#            createTable(cursor)
-#        case 4:
-#            insert(cursor)
-#        case 5:
-#            update(cursor)
-#        case 6:
-#            remove(cursor)
-#        case 7:
-#            insert2(cursor)
-#        case 8:
-#            potInt(cursor)
-#        case 9:
-#            break
-#        case default:
-#            print("Not a valid selection. Use characters '1', '2', etc.")
-
-
