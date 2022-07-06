@@ -91,7 +91,7 @@ class Admin(User):
         print("TestA")
     #create/remove courses
 
-    def createCourse(cursor):
+    def createCourse(self, cursor):
         """Allows admins to add a course to the 'course' table. Created by Tom."""
         while(1):
             if input("Add courses. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
@@ -104,11 +104,11 @@ class Admin(User):
             year = input('Year: ')
             credits = input('Credits: ')
             try:
-                cursor.execute("""INSERT INTO course VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');""" % (crn, title, dept, time, days, semester, year, credits))
+                cursor.execute("""INSERT INTO course VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', 0);""" % (crn, title, dept, time, days, semester, year, credits)) ##table has a new column!!!!!!!!!!
             except:
                 print("Error in parameter inputs.")
 
-    def removeCourse(cursor):
+    def removeCourse(self, cursor):
         """Allows admins to remove a course from the 'course' table. Created by Tom."""
         while(1):
             if input("Remove courses. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
@@ -191,7 +191,7 @@ def login(cursor):
 
 def searchAll(cursor):
     """Prints all courses. Created by Tom. NOTE: this function should be included in the "search by parameters" function by leaving all parameters blank."""
-    cursor.execute("SELECT * FROM courses;")
+    cursor.execute("SELECT * FROM course;")
     print(cursor.fetchall())     
             
 def searchParam(cursor):
