@@ -1,6 +1,16 @@
 from random import random
 import sqlite3
 
+def printCourse(course):
+    print('-----------------------------------------------------')
+    print('Course Name' + ': ' + course[1])
+    print('CRN' + ': ' + course[0])
+    print('Department' + ': ' + course[2])
+    print('Time' + ': ' + course[3])
+    print('Days of the Week' + ': ' + course[4])
+    print('Semester' + ': ' + course[5])
+    print('Year' + ': ' + str(course[6]))
+    print('Credits' + ': ' + str(course[7]))
 class User:
     def __init__(self, first, last, ID):
         self.first = first
@@ -74,18 +84,8 @@ class Instructor(User):
         if(allClasses.__len__() == 0):
             print("No classes found.")
         else:
-            for i, course in enumerate(allClasses):
-                print('-----------------------------------------------------')
-                print('Course ' + str(i+1) + ': ')
-                print('Course Name' + ': ' + course[1])
-                print('CRN' + ': ' + course[0])
-                print('Department' + ': ' + course[2])
-                print('Time' + ': ' + course[3])
-                print('Days of the Week' + ': ' + course[4])
-                print('Semester' + ': ' + course[5])
-                print('Year' + ': ' + str(course[6]))
-                print('Credits' + ': ' + str(course[7]))
-                print('-----------------------------------------------------')
+            for course in allClasses:
+                printCourse(course)
 
 class Admin(User):
     def testA(self):
@@ -125,7 +125,6 @@ class Admin(User):
                         pass
             except:
                 print("Course does not exist.")
-            
 
 def login(cursor):
     """Logs the user in, meaning that an object with their name and ID is created and returned to caller. Created and tested by Tom."""
@@ -196,6 +195,62 @@ def searchAll(cursor):
     cursor.execute("SELECT * FROM courses;")
     print(cursor.fetchall())     
             
+def searchParam(cursor):
+    """Allows a user to search based on one parameter. Made by Jacob"""
+    print('Params: CRN, TITLE, DEPARTMENT, TIME, DAY, SEMESTER, YEAR, CREDITS, INSTRUCTORID')
+    param = input("Enter a parameter: ")
+    match param:
+        case 'CRN':
+            crn = input("Enter a CRN: ")
+            cursor.execute("SELECT * FROM COURSE WHERE CRN='%s';" %crn)
+            courses = cursor.fetchall()
+            for course in courses:
+                printCourse(course)
+        case 'TITLE':
+            title = input("Enter a title: ")
+            cursor.execute("SELECT * FROM COURSE WHERE TITLE='%s';" %title)
+            courses = cursor.fetchall()
+            for course in courses:
+                printCourse(course)
+        case 'DEPARTMENT':
+            department = input("Enter a department: ")
+            cursor.execute("SELECT * FROM COURSE WHERE DEPARTMENT='%s';" %department)
+            courses = cursor.fetchall()
+            for course in courses:
+                printCourse(course)
+        case 'DAYSOFWEEK':
+            daysOfWeek = input("Enter a days of week: ")
+            cursor.execute("SELECT * FROM COURSE WHERE DAYSOFWEEK='%s';" %daysOfWeek)
+            courses = cursor.fetchall()
+            for course in courses:
+                printCourse(course)
+        case 'SEMESTER':
+            semester = input("Enter a semester: ")
+            cursor.execute("SELECT * FROM COURSE WHERE SEMESTER='%s';" %semester)
+            courses = cursor.fetchall()
+            for course in courses:
+                printCourse(course)
+        case 'YEAR':
+            year = input("Enter a year: ")
+            cursor.execute("SELECT * FROM COURSE WHERE YEAR='%s';" %year)
+            courses = cursor.fetchall()
+            for course in courses:
+                printCourse(course)
+        case 'CREDITS':
+            credits = input("Enter a credits: ")
+            cursor.execute("SELECT * FROM COURSE WHERE CREDITS='%s';" %credits)
+            courses = cursor.fetchall()
+            for course in courses:
+                printCourse(course)
+        case 'INSTRUCTORID':
+            instructorID = input("Enter an instructor ID: ")
+            cursor.execute("SELECT * FROM COURSE WHERE INSTRUCTORID='%s';" %instructorID)
+            courses = cursor.fetchall()
+            for course in courses:
+                printCourse(course)
+        case _:
+            print('Not a valid param')
+        
 
 
 ## Driver Code
@@ -223,7 +278,7 @@ if type(user).__name__ == 'Admin':
             case 1:
                 searchAll(cursor)
             case 2:
-                searchParam(cursor) #TODO
+                searchParam(cursor)
             case 3:
                 user.createCourse(cursor)
             case 4:
@@ -253,7 +308,7 @@ elif type(user).__name__ == 'Instructor':
             case 1:
                 searchAll(cursor)
             case 2:
-                searchParam(cursor) #TODO
+                searchParam(cursor)
             case 3:
                 user.instructorPrintSchedule(cursor) 
             case 4:
@@ -276,7 +331,7 @@ else:
             case 1:
                 searchAll(cursor)
             case 2:
-                searchParam(cursor) #TODO
+                searchParam(cursor) 
             case 3:
                 user.addCourseToSemesterSchedule(cursor) 
             case 4:
