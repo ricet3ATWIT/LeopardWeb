@@ -291,7 +291,8 @@ if type(user).__name__ == 'Admin':
             case 8:
                 user.removeLink(cursor) #TODO
             case 9:
-                user.logout(cursor) #TODO
+                user.logout()
+                break
             case default:
                 print("Not a valid selection. Use characters '1', '2', etc.")
 elif type(user).__name__ == 'Instructor':
@@ -313,7 +314,8 @@ elif type(user).__name__ == 'Instructor':
             case 4:
                 pass #TODO
             case 5:
-                user.logout(cursor) #TODO
+                user.logout()
+                break
             case default:
                 print("Not a valid selection. Use characters '1', '2', etc.")
 else:
@@ -338,7 +340,8 @@ else:
             case 5:
                 user.printSchedule(cursor) #TODO
             case 6:
-                user.logout(cursor) #TODO
+                user.logout()
+                break
             case default:
                 print("Not a valid selection. Use characters '1', '2', etc.")
 
