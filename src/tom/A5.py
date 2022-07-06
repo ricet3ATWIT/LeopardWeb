@@ -52,7 +52,6 @@ class Student(User):
         if course == None:
             print("Course not found") 
         else:
-            # print("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', '%s');""" % (crn, self.getID(), course[8]))
             try:
                 cursor.execute("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', '%s');""" % (crn, self.getID(), course[8]))
             except:
