@@ -1,3 +1,4 @@
+from random import random
 import sqlite3
 
 class User:
@@ -32,11 +33,50 @@ class Student(User):
     def testS(self):
         print("TestS")
     #add/drop courses
+    def addCourseToSemesterSchedule(self, cursor):
+        """Allows admins to add a course to the 'SEMESTERSCHEDULE' table. Created by Jacob."""
+
+        if input("Add courses to semester schedule. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
+        crn = input('CRN: ')
+        cursor.execute("SELECT * FROM COURSE WHERE CRN = '%s';" % (crn))
+        course = cursor.fetchone()
+        if course == None:
+            print("Course not found") 
+        print(course)
+        print(crn, self.ID, course[8])
+        print(int(str(crn).zfill(5)))
+        print("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', '%s');""" % (crn, self.getID(), course[8]))
+        cursor.execute("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', '%s');""" % (crn, self.getID(), course[8]))
+
 
 class Instructor(User):
     def testI(self):
         print("TestI")
     #assemble and print course roster
+
+    def instructorPrintSchedule(self, cursor):
+        """Prints the schedule of an instructor"""
+        cursor.execute("""SELECT * FROM COURSE WHERE INSTRUCTORID = '%s';""" % self.getID())
+        allClasses = cursor.fetchall()
+        if(allClasses.__len__() == 0):
+            print("No classes found.")
+        else:
+            for i, course in enumerate(allClasses):
+                print('-----------------------------------------------------')
+                print('Course ' + str(i+1) + ': ')
+                print('Course Name' + ': ' + course[1])
+                print('CRN' + ': ' + course[0])
+                print('Department' + ': ' + course[2])
+                print('Time' + ': ' + course[3])
+                print('Days of the Week' + ': ' + course[4])
+                print('Semester' + ': ' + course[5])
+                print('Year' + ': ' + str(course[6]))
+                print('Credits' + ': ' + str(course[7]))
+                print('-----------------------------------------------------')
+
+
+
+
 
 class Admin(User):
     def testA(self):
@@ -206,7 +246,7 @@ elif type(user).__name__ == 'Instructor':
             case 2:
                 searchParam(cursor) #TODO
             case 3:
-                user.printSchedule(cursor) #TODO
+                user.instructorPrintSchedule(cursor) 
             case 4:
                 pass #TODO
             case 5:
@@ -229,7 +269,8 @@ else:
             case 2:
                 searchParam(cursor) #TODO
             case 3:
-                user.addCourse(cursor) #TODO
+                print(cursor)
+                user.addCourseToSemesterSchedule(cursor) 
             case 4:
                 user.dropCourse(cursor) #TODO
             case 5:
@@ -241,7 +282,6 @@ else:
 
 # close the connection 
 database.close()
-
 
 
 
