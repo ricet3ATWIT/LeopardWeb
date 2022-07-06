@@ -35,27 +35,40 @@ class Student(User):
     #add/drop courses
     def addCourseToSemesterSchedule(self, cursor):
         """Allows admins to add a course to the 'SEMESTERSCHEDULE' table. Created by Jacob."""
-
         if input("Add courses to semester schedule. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
         crn = input('CRN: ')
         cursor.execute("SELECT * FROM COURSE WHERE CRN = '%s';" % (crn))
         course = cursor.fetchone()
         if course == None:
             print("Course not found") 
-        print(course)
-        print(crn, self.ID, course[8])
-        print(int(str(crn).zfill(5)))
-        print("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', '%s');""" % (crn, self.getID(), course[8]))
-        cursor.execute("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', '%s');""" % (crn, self.getID(), course[8]))
+        else:
+            # print("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', '%s');""" % (crn, self.getID(), course[8]))
+            try:
+                cursor.execute("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', '%s');""" % (crn, self.getID(), course[8]))
+            except:
+                print('Course already in semester schedule')
+
+    def dropCourseFromSemesterSchedule(self, cursor):
+        """Allows students to drop a course based on a CRN. Created by Jacob"""
+        if input("Add courses to semester schedule. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
+        crn = input('CRN: ')
+        cursor.execute("SELECT * FROM COURSE WHERE CRN = '%s';" % (crn))
+        course = cursor.fetchone()
+        if course == None:
+            print("Course not found") 
+        else:
+            try:
+                cursor.execute("""DELETE FROM SEMESTERSCHEDULE WHERE CRN='%s';""" % (crn))
+            except:
+                print('Course not in semester schedule')
 
 
 class Instructor(User):
     def testI(self):
         print("TestI")
     #assemble and print course roster
-
     def instructorPrintSchedule(self, cursor):
-        """Prints the schedule of an instructor"""
+        """Prints the schedule of an instructor. Created by Jacob"""
         cursor.execute("""SELECT * FROM COURSE WHERE INSTRUCTORID = '%s';""" % self.getID())
         allClasses = cursor.fetchall()
         if(allClasses.__len__() == 0):
@@ -73,10 +86,6 @@ class Instructor(User):
                 print('Year' + ': ' + str(course[6]))
                 print('Credits' + ': ' + str(course[7]))
                 print('-----------------------------------------------------')
-
-
-
-
 
 class Admin(User):
     def testA(self):
@@ -269,10 +278,9 @@ else:
             case 2:
                 searchParam(cursor) #TODO
             case 3:
-                print(cursor)
                 user.addCourseToSemesterSchedule(cursor) 
             case 4:
-                user.dropCourse(cursor) #TODO
+                user.dropCourseFromSemesterSchedule(cursor) 
             case 5:
                 user.printSchedule(cursor) #TODO
             case 6:
