@@ -376,6 +376,4 @@ def potInt(cursor):
     for i in query_result:
 	    print(i)
 
-# Add/remove course from semester schedule (based on course ID number)
-# Assemble and print course roster (instructor)
-# Add/remove courses from the system (admin)
+

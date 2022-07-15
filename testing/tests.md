@@ -8,7 +8,6 @@ Test Case 1
 * logout
 
 Run the following command:
-```
 ```python
 python3 src/tom/A5.py < testing/addRemoveFromStudentCourseSchedule1.txt 
 ```
