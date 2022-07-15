@@ -37,6 +37,7 @@ Add courses to semester schedule. Hit enter to continue, or type 'exit' to go ba
         (5) Print schedule
         (6) Log out
 ```
+**The test did match the expectations.**
 
 Test Case 2
 * Login as student
@@ -83,6 +84,7 @@ Add courses to semester schedule. Hit enter to continue, or type 'exit' to go ba
         (5) Print schedule
         (6) Log out
 ```
+**The test did match the expectations.**
 
 ## Assemble and Print Instructor Course Roster - Jacob
 Test Case 1
@@ -120,7 +122,7 @@ INSTRUCTOR MENU:
         (4) Search other teaching schedules 
         (5) Log out
 ```
-
+**The test did match the expectations.**
 
 # Add/remove courses from the system as an Admin - Jacob
 Test Case 1
@@ -199,3 +201,4 @@ Confirm deletion? (y/n): Remove courses. Hit enter to continue, or type 'exit' t
         (8) Remove links
         (9) Log out
 ```
+**The test did match the expectations.**
