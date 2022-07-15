@@ -44,7 +44,7 @@ class Student(User):
         print("TestS")
     #add/drop courses
     def addCourseToSemesterSchedule(self, cursor):
-        """Allows admins to add a course to the 'SEMESTERSCHEDULE' table. Created by Jacob."""
+        """Allows students to add a course to the 'SEMESTERSCHEDULE' table. Created by Jacob."""
         if input("Add courses to semester schedule. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
         crn = input('CRN: ')
         cursor.execute("SELECT * FROM COURSE WHERE CRN = '%s';" % (crn))
@@ -375,3 +375,7 @@ def potInt(cursor):
         print("No instructors available.")
     for i in query_result:
 	    print(i)
+
+# Add/remove course from semester schedule (based on course ID number)
+# Assemble and print course roster (instructor)
+# Add/remove courses from the system (admin)
