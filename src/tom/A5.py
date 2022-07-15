@@ -196,7 +196,7 @@ def searchAll(cursor):
             
 def searchParam(cursor):
     """Allows a user to search based on one parameter. Made by Jacob"""
-    print('Params: CRN, TITLE, DEPARTMENT, TIME, DAY, SEMESTER, YEAR, CREDITS, INSTRUCTORID')
+    print('Params: CRN, TITLE, DEPARTMENT, TIME, DAYS, SEMESTER, YEAR, CREDITS, INSTRUCTORID')      #There is no case statement for 'Time'
     param = input("Enter a parameter: ")
     match param:
         case 'CRN':
@@ -217,7 +217,7 @@ def searchParam(cursor):
             courses = cursor.fetchall()
             for course in courses:
                 printCourse(course)
-        case 'DAYSOFWEEK':
+        case 'DAYS':
             daysOfWeek = input("Enter a days of week: ")
             cursor.execute("SELECT * FROM COURSE WHERE DAYSOFWEEK='%s';" %daysOfWeek)
             courses = cursor.fetchall()
