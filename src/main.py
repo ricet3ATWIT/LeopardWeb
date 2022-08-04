@@ -1,16 +1,8 @@
 from random import random
+from collections import Counter
 import sqlite3
 
-def printCourse(course):
-    print('-----------------------------------------------------')
-    print('Course Name' + ': ' + course[1])
-    print('CRN' + ': ' + course[0])
-    print('Department' + ': ' + course[2])
-    print('Time' + ': ' + course[3])
-    print('Days of the Week' + ': ' + course[4])
-    print('Semester' + ': ' + course[5])
-    print('Year' + ': ' + str(course[6]))
-    print('Credits' + ': ' + str(course[7]))
+
 class User:
     def __init__(self, first, last, ID):
         self.first = first
@@ -34,15 +26,11 @@ class User:
         print("First: ", self.first)
         print("Last: ", self.last)
         print("ID: ", self.ID)
-    # login (I made it global), logout, search, search(parameters)
     def logout(self):
         database.commit()
         del(self)
 
 class Student(User):
-    def testS(self):
-        print("TestS")
-    #add/drop courses
     def addCourseToSemesterSchedule(self, cursor):
         """Allows students to add a course to the 'SEMESTERSCHEDULE' table. Created by Jacob."""
         if input("Add courses to semester schedule. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
@@ -57,8 +45,42 @@ class Student(User):
             except:
                 print('Course already in semester schedule')
 
+    def studentPrintSchedule(self, cursor):
+        """Prints the schedule of an student. Created by Tom."""
+        cursor.execute("""SELECT CRN FROM SEMESTERSCHEDULE WHERE STUDENTID = '%s';""" % self.getID())
+        allCRNs = cursor.fetchall()
+        if(allCRNs.__len__() == 0):
+            print("No classes found.")
+        else:
+            for crn in allCRNs:
+                cursor.execute("SELECT * FROM COURSE WHERE CRN='%s';" %crn)
+                course = cursor.fetchone()
+                printCourse(course)
+
+    def checkConflicts(self, cursor):
+        """Checks if the student has conflicting class times. Created by Tom."""
+        #get list of CRNs
+        cursor.execute("""SELECT CRN FROM SEMESTERSCHEDULE WHERE STUDENTID = '%s';""" % self.getID())
+        allCRNs = cursor.fetchall()
+        if(allCRNs.__len__() == 0):
+            print("No classes found.")
+        else:
+            times, days = []
+            #make two lists to storing each class's meeting time and days
+            for crn in allCRNs:
+                cursor.execute("SELECT TIME FROM COURSE WHERE CRN='%s';" %crn)
+                times[crn] = cursor.fetchall()
+                cursor.execute("SELECT DAYSOFWEEK FROM COURSE WHERE CRN='%s';" %crn)
+                days[crn] = cursor.fetchall()
+            #check for common days
+            for i in range(len(days)-1):
+                j = i+1
+                for j in range(len(days)-1):
+                    common(days[i], days[j])        
+
+
     def dropCourseFromSemesterSchedule(self, cursor):
-        """Allows students to drop a course based on a CRN. Created by Jacob"""
+        """Allows students to drop a course based on a CRN. Created by Jacob."""
         if input("Add courses to semester schedule. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
         crn = input('CRN: ')
         cursor.execute("SELECT * FROM COURSE WHERE CRN = '%s';" % (crn))
@@ -73,9 +95,6 @@ class Student(User):
 
 
 class Instructor(User):
-    def testI(self):
-        print("TestI")
-    #assemble and print course roster
     def instructorPrintSchedule(self, cursor):
         """Prints the schedule of an instructor. Created by Jacob"""
         cursor.execute("""SELECT * FROM COURSE WHERE INSTRUCTORID = '%s';""" % self.getID())
@@ -87,10 +106,6 @@ class Instructor(User):
                 printCourse(course)
 
 class Admin(User):
-    def testA(self):
-        print("TestA")
-    #create/remove courses
-
     def createCourse(self, cursor):
         """Allows admins to add a course to the 'course' table. Created by Tom."""
         while(1):
@@ -185,14 +200,51 @@ def login(cursor):
                 user = Student(first[0], last[0], ID[0])
             break
         else:
-            print('Incorrect password. '); continue
+            print('Incorrect password.'); continue
     print("Login successful!")
     return user
 
+def common(str1,str2):          # taken from https://www.geeksforgeeks.org/python-code-print-common-characters-two-strings-alphabetical-order/
+     
+    # convert both strings into counter dictionary
+    dict1 = Counter(str1)
+    dict2 = Counter(str2)
+ 
+    # take intersection of these dictionaries
+    commonDict = dict1 & dict2
+ 
+    if len(commonDict) == 0:
+        print (-1)
+        return
+ 
+    # get a list of common elements
+    commonChars = list(commonDict.elements())
+ 
+    # sort list in ascending order to print resultant
+    # string on alphabetical order
+    commonChars = sorted(commonChars)
+ 
+    # join characters without space to produce
+    # resultant string
+    print (''.join(commonChars))
+
+def printCourse(course):
+    print('-------------------------------------------')
+    print('Course Name' + ': ' + course[1])
+    print('CRN' + ': ' + course[0])
+    print('Department' + ': ' + course[2])
+    print('Time' + ': ' + course[3])
+    print('Days of the Week' + ': ' + course[4])
+    print('Semester' + ': ' + course[5])
+    print('Year' + ': ' + str(course[6]))
+    print('Credits' + ': ' + str(course[7]))
+
 def searchAll(cursor):
-    """Prints all courses. Created by Tom. NOTE: this function should be included in the "search by parameters" function by leaving all parameters blank."""
+    """Prints all courses. Created by Tom."""
     cursor.execute("SELECT * FROM course;")
-    print(cursor.fetchall())     
+    courses = cursor.fetchall()
+    for course in courses:
+        printCourse(course)     
             
 def searchParam(cursor):
     """Allows a user to search based on one parameter. Made by Jacob"""
@@ -254,7 +306,7 @@ def searchParam(cursor):
 
 ## Driver Code
 # database file connection 
-database = sqlite3.connect("src/assignment5.db") 
+database = sqlite3.connect("src/main.db") 
 
 # cursor objects are used to traverse, search, grab, etc. information from the database, similar to indices or pointers  
 cursor = database.cursor() 
@@ -262,7 +314,7 @@ cursor = database.cursor()
 user = login(cursor)
 if type(user).__name__ == 'Admin':
     while(1):
-        choice = input("""ADMIN MENU:
+        choice = input("""\nADMIN MENU:
         (1) Search courses
         (2) Search courses (with parameters)
         (3) Add courses to system
@@ -271,7 +323,7 @@ if type(user).__name__ == 'Admin':
         (6) Remove user from system
         (7) Link user to course
         (8) Remove links
-        (9) Log out\n""")
+        (9) Save and log out\n""")
         selection = int(choice)
         match selection:
             case 1:
@@ -293,16 +345,16 @@ if type(user).__name__ == 'Admin':
             case 9:
                 user.logout()
                 break
-            case default:
+            case _:
                 print("Not a valid selection. Use characters '1', '2', etc.")
 elif type(user).__name__ == 'Instructor':
     while(1):
-        choice = input("""INSTRUCTOR MENU:
+        choice = input("""\nINSTRUCTOR MENU:
         (1) Search courses
         (2) Search courses (with parameters)
         (3) Print teaching schedule
         (4) Search other teaching schedules 
-        (5) Log out\n""") # Do we need #4? I feel like we should do that one last.
+        (5) Save and log out\n""") # Do we need #4? I feel like we should do that one last.
         selection = int(choice)
         match selection:
             case 1:
@@ -316,17 +368,17 @@ elif type(user).__name__ == 'Instructor':
             case 5:
                 user.logout()
                 break
-            case default:
+            case _:
                 print("Not a valid selection. Use characters '1', '2', etc.")
 else:
     while(1):
-        choice = input("""STUDENT MENU:
+        choice = input("""\nSTUDENT MENU:
         (1) Search courses
         (2) Search courses (with parameters)
         (3) Add courses
         (4) Drop courses
         (5) Print schedule
-        (6) Log out\n""")
+        (6) Save and log out\n""")
         selection = int(choice)
         match selection:
             case 1:
@@ -338,42 +390,12 @@ else:
             case 4:
                 user.dropCourseFromSemesterSchedule(cursor) 
             case 5:
-                user.printSchedule(cursor) #TODO
+                user.studentPrintSchedule(cursor)
             case 6:
                 user.logout()
                 break
-            case default:
+            case _:
                 print("Not a valid selection. Use characters '1', '2', etc.")
 
 # close the connection 
 database.close()
-
-
-
-
-
-
-
-
-### OLD CODE ###
-def update(cursor):
-    uid = input('Enter the ID of the administrator you want to update: ')
-    title = input('New Title: ')
-    cursor.execute("""UPDATE ADMIN SET TITLE = '%s' WHERE ADMIN.ID = '%s';""" % (title, uid))
-
-def remove(cursor):
-    uid = input('Enter the ID of the user you want to remove: ')
-    cursor.execute("""DELETE FROM INSTRUCTOR WHERE ID = '%s';""" % (uid))
-
-def potInt(cursor):
-    """'Potential Instructors' - Lists instructors who can teach certain courses"""
-    dept = input('Query instructors for which department?\n')
-    print("Only those that can teach %s classes:" %dept)
-    cursor.execute("""SELECT ID, SURNAME FROM INSTRUCTOR WHERE INSTRUCTOR.DEPT = '%s';""" % (dept))
-    query_result = cursor.fetchall()
-    if query_result == None:
-        print("No instructors available.")
-    for i in query_result:
-	    print(i)
-
-
