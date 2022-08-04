@@ -48,7 +48,7 @@ class Student(User):
     def studentPrintSchedule(self, cursor):
         """Prints the schedule of an student. Created by Tom."""
         cursor.execute("""SELECT CRN FROM SEMESTERSCHEDULE WHERE STUDENTID = '%s';""" % self.getID())
-        allCRNs = cursor.fetchall()
+        allCRNs = cursor.fetchone()
         if(allCRNs.__len__() == 0):
             print("No classes found.")
         else:
@@ -65,19 +65,30 @@ class Student(User):
         if(allCRNs.__len__() == 0):
             print("No classes found.")
         else:
-            times, days = []
-            #make two lists to storing each class's meeting time and days
+            times = []
+            days = []
+            #make two lists for storing each class's meeting time and days
             for crn in allCRNs:
                 cursor.execute("SELECT TIME FROM COURSE WHERE CRN='%s';" %crn)
-                times[crn] = cursor.fetchall()
+                time = cursor.fetchone()
+                times.append(time)
                 cursor.execute("SELECT DAYSOFWEEK FROM COURSE WHERE CRN='%s';" %crn)
-                days[crn] = cursor.fetchall()
+                day = cursor.fetchone()
+                days.append(day)
             #check for common days
-            for i in range(len(days)-1):
+            i = 0
+            while i < len(days)-1:
                 j = i+1
-                for j in range(len(days)-1):
-                    common(days[i], days[j])        
-
+                while j <= len(days)-1:
+                    if(isCommon(days[i], days[j]) == 1):
+                        #check times
+                        if (times[i] == times[j]):
+                            print("Conflicting CRNs: %s, %s" % (allCRNs[i][0], allCRNs[j][0]))
+                            #print(','.join([str(j[0]) for j in allCRNs])
+                            return
+                    j += 1
+                i += 1
+            print("No conflicts!")
 
     def dropCourseFromSemesterSchedule(self, cursor):
         """Allows students to drop a course based on a CRN. Created by Jacob."""
@@ -204,29 +215,16 @@ def login(cursor):
     print("Login successful!")
     return user
 
-def common(str1,str2):          # taken from https://www.geeksforgeeks.org/python-code-print-common-characters-two-strings-alphabetical-order/
-     
+def isCommon(str1,str2):  # taken from https://www.geeksforgeeks.org/python-code-print-common-characters-two-strings-alphabetical-order/
     # convert both strings into counter dictionary
     dict1 = Counter(str1)
     dict2 = Counter(str2)
- 
     # take intersection of these dictionaries
     commonDict = dict1 & dict2
- 
     if len(commonDict) == 0:
-        print (-1)
-        return
- 
-    # get a list of common elements
-    commonChars = list(commonDict.elements())
- 
-    # sort list in ascending order to print resultant
-    # string on alphabetical order
-    commonChars = sorted(commonChars)
- 
-    # join characters without space to produce
-    # resultant string
-    print (''.join(commonChars))
+        return 0 #FALSE
+    else:
+        return 1 #TRUE
 
 def printCourse(course):
     print('-------------------------------------------')
@@ -378,7 +376,8 @@ else:
         (3) Add courses
         (4) Drop courses
         (5) Print schedule
-        (6) Save and log out\n""")
+        (6) Check for schedule conflicts
+        (7) Save and log out\n""")
         selection = int(choice)
         match selection:
             case 1:
@@ -392,6 +391,8 @@ else:
             case 5:
                 user.studentPrintSchedule(cursor)
             case 6:
+                user.checkConflicts(cursor)
+            case 7:
                 user.logout()
                 break
             case _:
