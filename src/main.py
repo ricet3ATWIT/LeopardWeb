@@ -587,7 +587,7 @@ elif type(user).__name__ == 'Instructor':
             case 3:
                 user.instructorPrintSchedule(cursor) 
             case 4:
-                pass #TODO
+                user.searchRosters(cursor)
             case 5:
                 user.logout()
                 break
