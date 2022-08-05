@@ -1,11 +1,15 @@
 #Script to seed courses to the database
 import sqlite3
 
-database = sqlite3.connect("src/assignment5.db") 
+database = sqlite3.connect("src/main.db") 
 # cursor objects are used to traverse, search, grab, etc. information from the database, similar to indices or pointers  
 cursor = database.cursor() 
 
+# drop the COURSE table if it exists
+cursor.execute("DROP TABLE IF EXISTS COURSE")
 
+# Drop semesterscheudle table if it exists
+cursor.execute("DROP TABLE IF EXISTS SEMESTERSCHEDULE")
 
 
 sql_command = """
@@ -24,12 +28,14 @@ INSTRUCTORID CHAR(5) NOT NULL);
 cursor.execute(sql_command) 
 
 
-
+# student is nullable so we can create a class with just an instructor
 sql_command = """
 CREATE TABLE SEMESTERSCHEDULE (  
-CRN CHAR(5) PRIMARY KEY NOT NULL,
+CRN CHAR(5) NOT NULL,
 INSTRUCTORID CHAR(5) NOT NULL,
-STUDENTID CHAR(5) NOT NULL);
+STUDENTID CHAR(5), 
+PRIMARY KEY (CRN, STUDENTID, INSTRUCTORID)
+);
 """
 cursor.execute(sql_command) 
 

@@ -151,6 +151,152 @@ class Admin(User):
             except:
                 print("Course does not exist.")
 
+    def createUser(self, cursor):
+      print('You can create a student or instructor. Type "student" or "instructor"')
+      userType = input('Would you like to create an instructor or student? ')
+      if(userType == 'student'):
+        self.createStudent(cursor)
+      elif(userType == 'instructor'):
+        self.createInstructor(cursor)
+      else:
+        print('Invalid input')
+        return
+    
+    def createStudent(self, cursor):
+        """Allows admins to add a student to the 'student' table. Created by Jacob."""
+        while(1):
+            if input("Add students. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
+            id = input('ID: ')
+            first = input("First name: ")
+            surname = input("Surname: ")
+            gradYear = input("Graduation year: ")
+            major = input("Major: ")
+            email = input("Email: ")
+            password = input("Password: ")
+
+            try:
+                cursor.execute("""INSERT INTO student VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s');""" % (id, first, surname, gradYear, major, email, password)) 
+            except:
+                print("Error in parameter inputs.")
+    
+    
+    def createInstructor(self, cursor):
+        """Allows admins to add a instructor to the 'instructor' table. Created by Jacob."""
+        while(1):
+            if input("Add instructors. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
+            id = input('ID: ')
+            first = input("First name: ")
+            surname = input("Surname: ")
+            title = input("Title: ")
+            hireYear = input("Hire year: ")
+            dept = input("Department: ")
+            email = input("Email: ")
+            password = input("Password: ")
+
+            try:
+                cursor.execute("""INSERT INTO instructor VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',);""" % (id, first, surname, title, hireYear, dept, email, password)) 
+            except:
+                print("Error in parameter inputs.")
+
+    def removeStudent(self, cursor):
+        """Allows admins to remove a student from the 'student' table. Created by Jacob."""
+        while(1):
+            if input("Remove students. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
+            id = input("Input the ID of the student to delete: ")
+            try:
+                cursor.execute("""SELECT * FROM student WHERE id = '%s';""" %id)
+                print("Student selected: %s" %cursor.fetchall())
+                confirm = input("Confirm deletion? (y/n): ")
+                match confirm:
+                    case 'y':
+                        cursor.execute("""DELETE FROM student WHERE id = '%s';""" %id)
+                    case _:
+                        pass
+            except:
+                print("Student does not exist.")
+    
+    def removeInstructor(self, cursor):
+        """Allows admins to remove a instructor from the 'instructor' table. Created by Jacob."""
+        while(1):
+            if input("Remove instructors. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
+            id = input("Input the ID of the instructor to delete: ")
+            try:
+                cursor.execute("""SELECT * FROM instructor WHERE id = '%s';""" %id)
+                print("Instructor selected: %s" %cursor.fetchall())
+                confirm = input("Confirm deletion? (y/n): ")
+                match confirm:
+                    case 'y':
+                        cursor.execute("""DELETE FROM instructor WHERE id = '%s';""" %id)
+                    case _:
+                        pass
+            except:
+                print("Instructor does not exist.")
+
+    def removeUser(self, cursor):
+        """Allows admins to remove a user from the 'user' table. Created by Jacob"""
+        print('You can remove a student or instructor. Type "student" or "instructor"')
+        userType = input('Would you like to remove an instructor or student? ')
+        if(userType == 'student'):
+          self.removeStudent(cursor)
+        elif(userType == 'instructor'):
+          self.removeInstructor(cursor)
+        else:
+          print('Invalid input')
+          return
+    def addUserToCourse(self, cursor):
+      print('You can add a student or an instructor to a class. Type "student" or "instructor"')
+      userType = input('Would you like to add an instructor or a student? ')
+      if(userType == 'student'):
+        self.addStudentToCourse(cursor)
+      elif(userType == 'instructor'):
+        self.addInstructorToCourse(cursor)
+      else:
+        print('Invalid input')
+        return
+    
+    def addStudentToCourse(self, cursor):
+        """Allows admins to add a student to a course. Created by Jacob."""
+        while(1):
+            if input("Add a student to a course. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
+            id = input('Student ID: ')
+            crn = input("Course CRN: ")
+
+            cursor.execute("SELECT * FROM COURSE WHERE CRN = '%s';" % (crn))
+            course = cursor.fetchone()
+            if course == None:
+                print("Course not found") 
+            else:
+                try:
+                  cursor.execute("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', '%s');""" % (crn, id, course[8]))
+                except:
+                    print('Course already in semester schedule')
+    def addInstructorToCourse(self, cursor):
+        """Allows admins to add an instructor to a course. Created by Jacob."""
+        while(1):
+            if input("Add an instructor to a course. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
+            id = input('Instructor ID: ')
+            crn = input("Course CRN: ")
+            cursor.execute("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', null);""" % (crn, id))
+            # except:
+            #     print('Course already in semester schedule')
+    
+    def removeStudentFromCourse(self, cursor):
+        """Allows admins to remove a user from a course. Created by Jacob."""
+        while(1):
+            if input("Remove instructor/student from courses. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
+            id = input('User ID: ')
+            crn = input("Course CRN: ")
+
+            cursor.execute("SELECT * FROM COURSE WHERE CRN = '%s';" % (crn))
+            course = cursor.fetchone()
+            if course == None:
+                print("Course not found") 
+            else:
+                try:
+                    cursor.execute("""DELETE FROM SEMESTERSCHEDULE WHERE CRN = '%s' AND ID = '%s';""" % (crn, id))
+                except:
+                    print('Course not in semester schedule')
+
 def login(cursor):
     """Logs the user in, meaning that an object with their name and ID is created and returned to caller. Created and tested by Tom."""
     while(1):
@@ -333,13 +479,13 @@ if type(user).__name__ == 'Admin':
             case 4:
                 user.removeCourse(cursor)
             case 5:
-                user.addUser(cursor) #TODO
+                user.createUser(cursor) 
             case 6:
-                user.removeUser(cursor) #TODO
+                user.removeUser(cursor) 
             case 7:
-                user.linkUser(cursor) #TODO
+                user.addUserToCourse(cursor) 
             case 8:
-                user.removeLink(cursor) #TODO
+                user.removeUserFromCourse(cursor) 
             case 9:
                 user.logout()
                 break
