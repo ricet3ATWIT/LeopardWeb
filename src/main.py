@@ -116,6 +116,22 @@ class Instructor(User):
             for course in allClasses:
                 printCourse(course)
 
+    def searchRosters(self, cursor):
+      """Allows instructors to search and print course rosters. Created by Tom."""
+      while(1):
+          if input("Search courses. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
+          crn = input('Enter a CRN: ')
+          try:
+              cursor.execute("SELECT STUDENTID FROM SEMESTERSCHEDULE WHERE CRN='%s';" %crn)
+              students = cursor.fetchall()
+              for kid in students:
+                  cursor.execute("SELECT SURNAME, NAME FROM STUDENT WHERE ID='%s';" %kid)
+                  student = cursor.fetchall()
+                  for i in student:
+                      print(i)
+          except:
+              print("Error in parameter inputs.")
+
 class Admin(User):
     def createCourse(self, cursor):
         """Allows admins to add a course to the 'course' table. Created by Tom."""
@@ -497,8 +513,8 @@ elif type(user).__name__ == 'Instructor':
         (1) Search courses
         (2) Search courses (with parameters)
         (3) Print teaching schedule
-        (4) Search other teaching schedules 
-        (5) Save and log out\n""") # Do we need #4? I feel like we should do that one last.
+        (4) Search course rosters
+        (5) Save and log out\n""") 
         selection = int(choice)
         match selection:
             case 1:
