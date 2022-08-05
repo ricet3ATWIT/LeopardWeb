@@ -1,4 +1,3 @@
-from random import random
 from collections import Counter
 import sqlite3
 
@@ -85,7 +84,6 @@ class Student(User):
                         #check times
                         if (times[i] == times[j]):
                             print("Conflicting CRNs: %s, %s" % (allCRNs[i][0], allCRNs[j][0]))
-                            #print(','.join([str(j[0]) for j in allCRNs])
                             return
                     j += 1
                 i += 1
@@ -173,15 +171,15 @@ class Admin(User):
                 print("Course does not exist.")
 
     def createUser(self, cursor):
-      print('You can create a student or instructor. Type "student" or "instructor"')
-      userType = input('Would you like to create an instructor or student? ')
-      if(userType == 'student'):
-        self.createStudent(cursor)
-      elif(userType == 'instructor'):
-        self.createInstructor(cursor)
-      else:
-        print('Invalid input')
-        return
+          print('You can create a student or instructor. Type "student" or "instructor"')
+          userType = input('Would you like to create an instructor or student? ')
+          if(userType == 'student'):
+              self.createStudent(cursor)
+          elif(userType == 'instructor'):
+              self.createInstructor(cursor)
+          else:
+              print('Invalid input')
+              return
     
     def createStudent(self, cursor):
         """Allows admins to add a student to the 'student' table. Created by Jacob."""
@@ -268,16 +266,17 @@ class Admin(User):
         else:
           print('Invalid input')
           return
+    
     def addUserToCourse(self, cursor):
-      print('You can add a student or an instructor to a class. Type "student" or "instructor"')
-      userType = input('Would you like to add an instructor or a student? ')
-      if(userType == 'student'):
-        self.addStudentToCourse(cursor)
-      elif(userType == 'instructor'):
-        self.addInstructorToCourse(cursor)
-      else:
-        print('Invalid input')
-        return
+        print('You can add a student or an instructor to a class. Type "student" or "instructor"')
+        userType = input('Would you like to add an instructor or a student? ')
+        if(userType == 'student'):
+            self.addStudentToCourse(cursor)
+        elif(userType == 'instructor'):
+            self.addInstructorToCourse(cursor)
+        else:
+            print('Invalid input')
+            return
     
     def addStudentToCourse(self, cursor):
         """Allows admins to add a student to a course. Created by Jacob."""
@@ -296,6 +295,7 @@ class Admin(User):
                   database.commit()
                 except:
                     print('Course already in semester schedule')
+
     def addInstructorToCourse(self, cursor):
         """Allows admins to add an instructor to a course. Created by Jacob."""
         while(1):
@@ -318,9 +318,6 @@ class Admin(User):
                       database.commit()
                   except:
                       print('Error in removing instructor from course')
-
-
-
               database.commit()
             except:
                 print('Course already in semester schedule')
@@ -529,7 +526,7 @@ def searchParam(cursor):
 
 ## Driver Code
 # database file connection 
-database = sqlite3.connect("src/main.db") 
+database = sqlite3.connect("main.db") 
 
 # cursor objects are used to traverse, search, grab, etc. information from the database, similar to indices or pointers  
 cursor = database.cursor() 
