@@ -40,7 +40,7 @@ class Student(User):
             print("Course not found") 
         else:
             try:
-                cursor.execute("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', '%s');""" % (crn, self.getID(), course[8]))
+                cursor.execute("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', '%s');""" % (crn, course[8], self.getID()))
                 database.commit()
             except:
                 print('Course already in semester schedule')
@@ -48,8 +48,8 @@ class Student(User):
     def studentPrintSchedule(self, cursor):
         """Prints the schedule of an student. Created by Tom."""
         cursor.execute("""SELECT CRN FROM SEMESTERSCHEDULE WHERE STUDENTID = '%s';""" % self.getID())
-        allCRNs = cursor.fetchone()
-        if(allCRNs.__len__() == 0):
+        allCRNs = cursor.fetchall()
+        if(allCRNs == None):
             print("No classes found.")
         else:
             for crn in allCRNs:
@@ -62,7 +62,7 @@ class Student(User):
         #get list of CRNs
         cursor.execute("""SELECT CRN FROM SEMESTERSCHEDULE WHERE STUDENTID = '%s';""" % self.getID())
         allCRNs = cursor.fetchall()
-        if(allCRNs.__len__() == 0):
+        if(allCRNs == None):
             print("No classes found.")
         else:
             times = []
@@ -91,7 +91,7 @@ class Student(User):
 
     def dropCourseFromSemesterSchedule(self, cursor):
         """Allows students to drop a course based on a CRN. Created by Jacob."""
-        if input("Add courses to semester schedule. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
+        if input("Drop courses from semester schedule. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
         crn = input('CRN: ')
         cursor.execute("SELECT * FROM COURSE WHERE CRN = '%s';" % (crn))
         course = cursor.fetchone()
@@ -110,7 +110,7 @@ class Instructor(User):
         """Prints the schedule of an instructor. Created by Jacob"""
         cursor.execute("""SELECT * FROM COURSE WHERE INSTRUCTORID = '%s';""" % self.getID())
         allClasses = cursor.fetchall()
-        if(allClasses.__len__() == 0):
+        if(allClasses == None):
             print("No classes found.")
         else:
             for course in allClasses:
