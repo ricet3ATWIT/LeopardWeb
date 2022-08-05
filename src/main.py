@@ -42,6 +42,7 @@ class Student(User):
         else:
             try:
                 cursor.execute("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', '%s');""" % (crn, self.getID(), course[8]))
+                database.commit()
             except:
                 print('Course already in semester schedule')
 
@@ -101,6 +102,7 @@ class Student(User):
         else:
             try:
                 cursor.execute("""DELETE FROM SEMESTERSCHEDULE WHERE CRN='%s';""" % (crn))
+                database.commit()
             except:
                 print('Course not in semester schedule')
 
@@ -145,8 +147,10 @@ class Admin(User):
             semester = input('Semester: ')
             year = input('Year: ')
             credits = input('Credits: ')
+            instructorId = input('Instructor Id: ')
             try:
-                cursor.execute("""INSERT INTO course VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', 0);""" % (crn, title, dept, time, days, semester, year, credits)) ##table has a new column!!!!!!!!!!
+                cursor.execute("""INSERT INTO course VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');""" % (crn, title, dept, time, days, semester, year, credits, instructorId)) 
+                database.commit()
             except:
                 print("Error in parameter inputs.")
 
@@ -162,6 +166,7 @@ class Admin(User):
                 match confirm:
                     case 'y':
                         cursor.execute("""DELETE FROM course WHERE crn = '%s';""" %crn)
+                        database.commit()
                     case _:
                         pass
             except:
@@ -192,6 +197,7 @@ class Admin(User):
 
             try:
                 cursor.execute("""INSERT INTO student VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s');""" % (id, first, surname, gradYear, major, email, password)) 
+                database.commit()
             except:
                 print("Error in parameter inputs.")
     
@@ -209,10 +215,11 @@ class Admin(User):
             email = input("Email: ")
             password = input("Password: ")
 
-            try:
-                cursor.execute("""INSERT INTO instructor VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',);""" % (id, first, surname, title, hireYear, dept, email, password)) 
-            except:
-                print("Error in parameter inputs.")
+            # try:
+            cursor.execute("""INSERT INTO instructor VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');""" % (id, first, surname, title, hireYear, dept, email, password)) 
+            database.commit()
+            # except:
+            #     print("Error in parameter inputs.")
 
     def removeStudent(self, cursor):
         """Allows admins to remove a student from the 'student' table. Created by Jacob."""
@@ -226,6 +233,7 @@ class Admin(User):
                 match confirm:
                     case 'y':
                         cursor.execute("""DELETE FROM student WHERE id = '%s';""" %id)
+                        database.commit()
                     case _:
                         pass
             except:
@@ -243,6 +251,7 @@ class Admin(User):
                 match confirm:
                     case 'y':
                         cursor.execute("""DELETE FROM instructor WHERE id = '%s';""" %id)
+                        database.commit()
                     case _:
                         pass
             except:
@@ -283,24 +292,53 @@ class Admin(User):
                 print("Course not found") 
             else:
                 try:
-                  cursor.execute("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', '%s');""" % (crn, id, course[8]))
+                  cursor.execute("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', '%s');""" % (crn, course[8], id))
+                  database.commit()
                 except:
                     print('Course already in semester schedule')
     def addInstructorToCourse(self, cursor):
         """Allows admins to add an instructor to a course. Created by Jacob."""
         while(1):
             if input("Add an instructor to a course. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
-            id = input('Instructor ID: ')
+            instructorId = input('Instructor ID: ')
             crn = input("Course CRN: ")
-            cursor.execute("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', null);""" % (crn, id))
-            # except:
-            #     print('Course already in semester schedule')
-    
+            try:
+              cursor.execute("""INSERT INTO SEMESTERSCHEDULE VALUES('%s', '%s', null);""" % (crn, instructorId))
+            
+
+
+              cursor.execute("SELECT * FROM COURSE WHERE CRN = '%s';" % (crn))
+              course = cursor.fetchone()
+              if course == None:
+                  print("Course not found") 
+              else:
+                  try:
+                      cursor.execute("""DELETE FROM COURSE WHERE CRN = '%s';""" % (crn))
+                      cursor.execute("""INSERT INTO course VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');""" % (crn, course[1], course[2], course[3], course[4], course[5], course[6], course[7], instructorId)) 
+                      database.commit()
+                  except:
+                      print('Error in removing instructor from course')
+
+
+
+              database.commit()
+            except:
+                print('Course already in semester schedule')
+    def removeUserFromCourse(self, cursor):
+      print('You can remove a student or an instructor from a class. Type "student" or "instructor"')
+      userType = input('Would you like to remove an instructor or a student? ')
+      if(userType == 'student'):
+        self.removeStudentFromCourse(cursor)
+      elif(userType == 'instructor'):
+        self.removeInstructorFromCourse(cursor)
+      else:
+        print('Invalid input')
+        return
     def removeStudentFromCourse(self, cursor):
         """Allows admins to remove a user from a course. Created by Jacob."""
         while(1):
-            if input("Remove instructor/student from courses. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
-            id = input('User ID: ')
+            if input("Remove student from courses. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
+            studentId = input('Student ID: ')
             crn = input("Course CRN: ")
 
             cursor.execute("SELECT * FROM COURSE WHERE CRN = '%s';" % (crn))
@@ -309,9 +347,28 @@ class Admin(User):
                 print("Course not found") 
             else:
                 try:
-                    cursor.execute("""DELETE FROM SEMESTERSCHEDULE WHERE CRN = '%s' AND ID = '%s';""" % (crn, id))
+                    cursor.execute("""DELETE FROM SEMESTERSCHEDULE WHERE CRN = '%s' AND STUDENTID = '%s' AND INSTRUCTORID = '%s';""" % (crn, studentId, course[8]))
+                    database.commit()
                 except:
                     print('Course not in semester schedule')
+
+    def removeInstructorFromCourse(self, cursor):
+        """Allows admins to remove a user from a course. Created by Jacob."""
+        while(1):
+            if input("Remove instructor from courses. Hit enter to continue, or type 'exit' to go back: ") == 'exit' : return
+            crn = input("Course CRN: ")
+            cursor.execute("SELECT * FROM COURSE WHERE CRN = '%s';" % (crn))
+            course = cursor.fetchone()
+            if course == None:
+                print("Course not found") 
+            else:
+                try:
+                    cursor.execute("""DELETE FROM COURSE WHERE CRN = '%s';""" % (crn))
+                    cursor.execute("""INSERT INTO course VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', null);""" % (crn, course[1], course[2], course[3], course[4], course[5], course[6], course[7])) 
+                    database.commit()
+                except:
+                    print('Error in removing instructor from course')
+
 
 def login(cursor):
     """Logs the user in, meaning that an object with their name and ID is created and returned to caller. Created and tested by Tom."""
@@ -414,6 +471,12 @@ def searchParam(cursor):
         case 'CRN':
             crn = input("Enter a CRN: ")
             cursor.execute("SELECT * FROM COURSE WHERE CRN='%s';" %crn)
+            courses = cursor.fetchall()
+            for course in courses:
+                printCourse(course)
+        case 'TIME':
+            time = input("Enter the start time of the course in the format 10:00:00 : ")
+            cursor.execute("SELECT * FROM COURSE WHERE TIME='%s';" %time)
             courses = cursor.fetchall()
             for course in courses:
                 printCourse(course)
